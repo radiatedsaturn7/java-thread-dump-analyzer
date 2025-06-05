@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import com.example.model.ThreadDump;
 import com.example.model.ThreadInfo;
 import com.example.model.StackFrame;
+import com.example.model.LockInfo;
 
 public class HotSpotParser implements ThreadDumpParser {
     private static final Pattern THREAD_HEADER =
@@ -21,6 +22,12 @@ public class HotSpotParser implements ThreadDumpParser {
             Pattern.compile("^\\s*java\\.lang\\.Thread.State: (\\S+)");
     private static final Pattern FRAME_LINE =
             Pattern.compile("^\\s*at ([^.(]+)\\.([^.(]+)\\(([^:]+)(?::(\\d+))?\\)");
+    private static final Pattern WAITING_LINE =
+            Pattern.compile("-\\s+waiting to lock <([^>]+)> \\(([^)]+)\\)");
+    private static final Pattern PARKING_LINE =
+            Pattern.compile("-\\s+parking to wait for\\s+<([^>]+)> \\(([^)]+)\\)");
+    private static final Pattern LOCKED_LINE =
+            Pattern.compile("-\\s+locked <([^>]+)> \\(([^)]+)\\)");
 
     @Override
     public ThreadDump parse(InputStream in) throws IOException {
@@ -32,13 +39,18 @@ public class HotSpotParser implements ThreadDumpParser {
         long currentId = -1;
         Thread.State currentState = Thread.State.NEW;
         List<StackFrame> currentStack = new ArrayList<>();
+        List<LockInfo> currentLocked = new ArrayList<>();
+        LockInfo waitingOn = null;
 
         while ((line = reader.readLine()) != null) {
             Matcher header = THREAD_HEADER.matcher(line);
             if (header.find()) {
                 if (currentName != null) {
-                    threads.add(new ThreadInfo(currentId, currentName, currentState, currentStack, null));
+                    threads.add(new ThreadInfo(currentId, currentName, currentState,
+                            currentStack, currentLocked, waitingOn));
                     currentStack = new ArrayList<>();
+                    currentLocked = new ArrayList<>();
+                    waitingOn = null;
                 }
                 currentName = header.group(1);
                 if (header.group(2) != null) {
@@ -82,11 +94,31 @@ public class HotSpotParser implements ThreadDumpParser {
                     }
                 }
                 currentStack.add(new StackFrame(cls, method, file, ln));
+                continue;
+            }
+
+            Matcher wait = WAITING_LINE.matcher(line.trim());
+            if (wait.find()) {
+                waitingOn = new LockInfo(wait.group(2), wait.group(1));
+                continue;
+            }
+
+            Matcher park = PARKING_LINE.matcher(line.trim());
+            if (park.find()) {
+                waitingOn = new LockInfo(park.group(2), park.group(1));
+                continue;
+            }
+
+            Matcher locked = LOCKED_LINE.matcher(line.trim());
+            if (locked.find()) {
+                currentLocked.add(new LockInfo(locked.group(2), locked.group(1)));
+                continue;
             }
         }
 
         if (currentName != null) {
-            threads.add(new ThreadInfo(currentId, currentName, currentState, currentStack, null));
+            threads.add(new ThreadInfo(currentId, currentName, currentState, currentStack,
+                    currentLocked, waitingOn));
         }
 
         return new ThreadDump(Instant.now(), threads);
