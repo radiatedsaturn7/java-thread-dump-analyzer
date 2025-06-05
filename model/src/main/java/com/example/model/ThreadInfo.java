@@ -8,14 +8,21 @@ public class ThreadInfo {
     private final String name;
     private final Thread.State state;
     private final List<StackFrame> stack;
-    private final LockInfo lockInfo;
+    private final List<LockInfo> lockedMonitors;
+    private final LockInfo waitingOn;
 
-    public ThreadInfo(long id, String name, Thread.State state, List<StackFrame> stack, LockInfo lockInfo) {
+    public ThreadInfo(long id, String name, Thread.State state, List<StackFrame> stack,
+                      List<LockInfo> lockedMonitors, LockInfo waitingOn) {
         this.id = id;
         this.name = name;
         this.state = state;
         this.stack = stack == null ? new ArrayList<>() : new ArrayList<>(stack);
-        this.lockInfo = lockInfo;
+        this.lockedMonitors = lockedMonitors == null ? new ArrayList<>() : new ArrayList<>(lockedMonitors);
+        this.waitingOn = waitingOn;
+    }
+
+    public ThreadInfo(long id, String name, Thread.State state, List<StackFrame> stack, LockInfo waitingOn) {
+        this(id, name, state, stack, new ArrayList<>(), waitingOn);
     }
 
     public long getId() {
@@ -34,7 +41,11 @@ public class ThreadInfo {
         return new ArrayList<>(stack);
     }
 
-    public LockInfo getLockInfo() {
-        return lockInfo;
+    public List<LockInfo> getLockedMonitors() {
+        return new ArrayList<>(lockedMonitors);
+    }
+
+    public LockInfo getWaitingOn() {
+        return waitingOn;
     }
 }

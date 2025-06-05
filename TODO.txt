@@ -9,21 +9,24 @@
 
 ## Parsing Layer
 - [x] Implement `HotSpotParser` for standard HotSpot thread dumps.
-- [ ] Implement `HsErrParser` for `hs_err_pid.log` crash files.
-- [ ] Implement `OpenJ9Parser` for IBM/OpenJ9 `javacore` dumps.
+- [x] Implement `HsErrParser` for `hs_err_pid.log` crash files.
+- [x] Implement `OpenJ9Parser` for IBM/OpenJ9 `javacore` dumps.
 - [x] Implement parser factory/format detector to choose parser based on file content.
-- [ ] Implement `JsonThreadDumpParser` for JSON-based dumps.
+- [x] Implement `JsonThreadDumpParser` for JSON-based dumps.
 
 ## Analysis Engine
  - [x] Compute thread state statistics per dump.
-- [ ] Detect deadlocks and report involved threads and locks.
+ - [x] Detect deadlocks and report involved threads and locks.
 - [ ] Identify lock contention hotspots (many threads waiting on the same lock).
 - [ ] Aggregate stack trace hotspots (common methods/frames).
 - [ ] Group identical stack traces and similar thread names.
 - [ ] Support multi-dump comparison and timeline of thread states.
-- [ ] Create `AnalysisSession` model to manage multiple `ThreadDump` objects.
+- [x] Create `AnalysisSession` model to manage multiple `ThreadDump` objects.
 - [ ] Provide advisory engine with heuristic checks for common thread anti-patterns.
 - [ ] Flag potential high CPU threads appearing RUNNABLE across dumps.
+- [ ] Integrate optional CPU usage data (e.g., from `top -H`) to correlate CPU percentage with thread IDs.
+- [ ] Categorize threads into JVM internal vs application threads for filtering and grouping.
+- [ ] Release old `ThreadDump` objects from memory after analysis to conserve RAM when many dumps are loaded.
 
 ## Reporting & Export
 - [ ] Generate HTML report with charts and tables.
@@ -33,22 +36,28 @@
 - [ ] Export standalone HTML report that bundles assets.
 
 ## CLI Interface
- - [x] Implement command line interface using a parsing library (e.g., Picocli).
+- [x] Implement command line interface using a parsing library (e.g., Picocli).
 - [ ] Support options for output format and selecting analysis features.
+- [ ] Add CLI option `--show-deadlocks-only` to display only detected deadlocks.
 
 ## Web Interface
-- [ ] Launch embedded Jetty server with upload form for thread dump files.
+ - [ ] Launch embedded Jetty server with upload form for thread dump files.
+ - [ ] Support uploading multiple thread dump files at once in the web UI.
 - [ ] Display results dashboard with charts, thread tables, and analysis highlights.
 - [ ] Integrate Chart.js for rendering charts in the web UI.
 - [ ] Use Datatables or similar for searchable/sortable thread tables.
 - [ ] Provide comparison view for multiple dumps.
 - [ ] Include context-sensitive help/tooltips in UI.
+- [ ] Provide glossary page with definitions for thread states and daemon threads.
 - [ ] Provide REST API endpoints for SPA/JSON consumers.
 - [ ] Implement pagination or virtualization for large thread tables.
 - [ ] Allow pasting raw thread dump text in addition to file uploads.
+- [ ] Add interactive stack trace viewer with highlighting of blocking lines.
+- [ ] Parse uploaded files asynchronously to keep the UI responsive.
 
 ## Visualization
 - [ ] Provide flame graph visualization for stack trace hotspots.
+- [ ] Add timeline chart showing thread state counts across multiple dumps.
 
 ## Testing
 - [ ] Unit tests for parsers and analysis engine.
