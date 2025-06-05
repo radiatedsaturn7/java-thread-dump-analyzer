@@ -1,0 +1,61 @@
+# TODO List for Java Thread Dump Analyzer
+
+## Project Setup
+- [x] Initialize Java project structure with modules for parser, analysis, CLI, and web UI.
+- [x] Configure build to produce a standalone JAR with minimal dependencies.
+
+## Data Model
+- [x] Implement core data model classes: `ThreadDump`, `ThreadInfo`, `StackFrame`, `LockInfo`.
+
+## Parsing Layer
+- [x] Implement `HotSpotParser` for standard HotSpot thread dumps.
+- [ ] Implement `HsErrParser` for `hs_err_pid.log` crash files.
+- [ ] Implement `OpenJ9Parser` for IBM/OpenJ9 `javacore` dumps.
+- [x] Implement parser factory/format detector to choose parser based on file content.
+- [ ] Implement `JsonThreadDumpParser` for JSON-based dumps.
+
+## Analysis Engine
+ - [x] Compute thread state statistics per dump.
+- [ ] Detect deadlocks and report involved threads and locks.
+- [ ] Identify lock contention hotspots (many threads waiting on the same lock).
+- [ ] Aggregate stack trace hotspots (common methods/frames).
+- [ ] Group identical stack traces and similar thread names.
+- [ ] Support multi-dump comparison and timeline of thread states.
+- [ ] Create `AnalysisSession` model to manage multiple `ThreadDump` objects.
+- [ ] Provide advisory engine with heuristic checks for common thread anti-patterns.
+- [ ] Flag potential high CPU threads appearing RUNNABLE across dumps.
+
+## Reporting & Export
+- [ ] Generate HTML report with charts and tables.
+- [ ] Export analysis results to PDF.
+- [ ] Provide option to limit stack trace depth in PDF export.
+- [ ] Export analysis results to CSV.
+- [ ] Export standalone HTML report that bundles assets.
+
+## CLI Interface
+ - [x] Implement command line interface using a parsing library (e.g., Picocli).
+- [ ] Support options for output format and selecting analysis features.
+
+## Web Interface
+- [ ] Launch embedded Jetty server with upload form for thread dump files.
+- [ ] Display results dashboard with charts, thread tables, and analysis highlights.
+- [ ] Integrate Chart.js for rendering charts in the web UI.
+- [ ] Use Datatables or similar for searchable/sortable thread tables.
+- [ ] Provide comparison view for multiple dumps.
+- [ ] Include context-sensitive help/tooltips in UI.
+- [ ] Provide REST API endpoints for SPA/JSON consumers.
+- [ ] Implement pagination or virtualization for large thread tables.
+- [ ] Allow pasting raw thread dump text in addition to file uploads.
+
+## Visualization
+- [ ] Provide flame graph visualization for stack trace hotspots.
+
+## Testing
+- [ ] Unit tests for parsers and analysis engine.
+- [ ] Integration tests for CLI and web workflows.
+- [ ] Unit tests for REST API and Json parser.
+- [ ] Provide sample thread dumps for test fixtures.
+
+## Documentation
+- [x] Expand README with usage instructions for both CLI and web interfaces.
+
