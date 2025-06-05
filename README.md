@@ -726,3 +726,41 @@ Favicon
 blog.ycrash
 Favicon
 github
+
+## Usage
+
+### Building
+
+Use Maven to build the CLI module and create a standalone JAR:
+
+```sh
+mvn -q package -DskipTests -pl cli -am
+```
+
+The resulting JAR will be located at `cli/target/cli-0.1.0-SNAPSHOT-shaded.jar`.
+
+### Command Line
+
+Run the analyzer directly with Java and one or more thread dump files:
+
+```sh
+java -jar analyzer.jar dump1.txt dump2.txt
+```
+
+Use the `--out` option to write an HTML, PDF, or CSV report:
+
+```sh
+java -jar analyzer.jar --out analysis.html dump1.txt
+```
+
+### Web Interface
+
+Simply execute the JAR with no arguments:
+
+```sh
+java -jar analyzer.jar
+```
+
+Then open `http://localhost:8080` in your browser. Upload one or more thread
+dump files using the form and click **Analyze** to view charts and tables. The
+web interface also offers download links for PDF or CSV exports.
