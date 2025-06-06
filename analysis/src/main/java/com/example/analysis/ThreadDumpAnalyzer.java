@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.example.model.ThreadDump;
 import com.example.model.ThreadInfo;
@@ -84,5 +85,40 @@ public class ThreadDumpAnalyzer {
             }
         }
         return result;
+    }
+
+    /**
+     * Identify locks that have multiple threads waiting on them.
+     * A lock contention hotspot is defined as a lock with at least
+     * {@code minWaiters} threads waiting to acquire it.
+     *
+     * @param dump thread dump to analyze
+     * @param minWaiters minimum number of waiting threads to consider a hotspot
+     * @return map of LockInfo to list of waiting threads
+     */
+    public Map<LockInfo, List<ThreadInfo>> findLockContentionHotspots(ThreadDump dump, int minWaiters) {
+        Map<String, LockInfo> lockById = new HashMap<>();
+        Map<String, List<ThreadInfo>> waiting = new HashMap<>();
+        for (ThreadInfo t : dump.getThreads()) {
+            LockInfo w = t.getWaitingOn();
+            if (w != null) {
+                lockById.putIfAbsent(w.getIdentity(), w);
+                waiting.computeIfAbsent(w.getIdentity(), k -> new ArrayList<>()).add(t);
+            }
+        }
+
+        return waiting.entrySet().stream()
+                .filter(e -> e.getValue().size() >= minWaiters)
+                .collect(Collectors.toMap(e -> lockById.get(e.getKey()), Map.Entry::getValue));
+    }
+
+    /**
+     * Convenience method using a default threshold of 2 waiting threads.
+     *
+     * @param dump thread dump to analyze
+     * @return map of LockInfo to list of waiting threads
+     */
+    public Map<LockInfo, List<ThreadInfo>> findLockContentionHotspots(ThreadDump dump) {
+        return findLockContentionHotspots(dump, 2);
     }
 }

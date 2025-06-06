@@ -13,14 +13,16 @@
 - [x] Implement `OpenJ9Parser` for IBM/OpenJ9 `javacore` dumps.
 - [x] Implement parser factory/format detector to choose parser based on file content.
 - [x] Implement `JsonThreadDumpParser` for JSON-based dumps.
+- [x] Support parsing of GZip-compressed thread dump files.
 
 ## Analysis Engine
  - [x] Compute thread state statistics per dump.
  - [x] Detect deadlocks and report involved threads and locks.
-- [ ] Identify lock contention hotspots (many threads waiting on the same lock).
+ - [x] Identify lock contention hotspots (many threads waiting on the same lock).
 - [ ] Aggregate stack trace hotspots (common methods/frames).
 - [ ] Group identical stack traces and similar thread names.
 - [ ] Support multi-dump comparison and timeline of thread states.
+- [ ] Highlight new and disappeared threads across dumps.
 - [x] Create `AnalysisSession` model to manage multiple `ThreadDump` objects.
 - [ ] Provide advisory engine with heuristic checks for common thread anti-patterns.
 - [ ] Flag potential high CPU threads appearing RUNNABLE across dumps.
@@ -39,6 +41,7 @@
 - [x] Implement command line interface using a parsing library (e.g., Picocli).
 - [ ] Support options for output format and selecting analysis features.
 - [ ] Add CLI option `--show-deadlocks-only` to display only detected deadlocks.
+- [ ] Add CLI option `--filter-state <STATE>` to show only threads in a given state.
 
 ## Web Interface
  - [ ] Launch embedded Jetty server with upload form for thread dump files.
@@ -52,12 +55,17 @@
 - [ ] Provide REST API endpoints for SPA/JSON consumers.
 - [ ] Implement pagination or virtualization for large thread tables.
 - [ ] Allow pasting raw thread dump text in addition to file uploads.
+- [ ] Show recently analyzed files on the upload page.
 - [ ] Add interactive stack trace viewer with highlighting of blocking lines.
-- [ ] Parse uploaded files asynchronously to keep the UI responsive.
+ - [ ] Parse uploaded files asynchronously to keep the UI responsive.
+- [ ] Cache parsed dumps in memory to avoid reprocessing on each request.
+- [x] Allow configuring the web server port via CLI option or environment variable.
+- [x] Bind web server to localhost by default to avoid remote exposure.
 
 ## Visualization
 - [ ] Provide flame graph visualization for stack trace hotspots.
 - [ ] Add timeline chart showing thread state counts across multiple dumps.
+- [ ] Include legend for chart color codes in the UI.
 
 ## Testing
 - [ ] Unit tests for parsers and analysis engine.
@@ -68,3 +76,4 @@
 ## Documentation
 - [x] Expand README with usage instructions for both CLI and web interfaces.
 
+- [ ] Write DOC.md with a user guide for CLI and web interface.

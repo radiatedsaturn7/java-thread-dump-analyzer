@@ -1,8 +1,10 @@
 package com.example.cli;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +37,7 @@ public class Main implements Runnable {
     public void run() {
         ThreadDumpAnalyzer analyzer = new ThreadDumpAnalyzer();
         for (String path : files) {
-            try (InputStream in = new FileInputStream(path)) {
+            try (InputStream in = openInput(path)) {
                 ThreadDumpParser parser = ParserFactory.detect(in);
                 ThreadDump dump = parser.parse(in);
                 Map<Thread.State, Long> counts = analyzer.computeStateCounts(dump);
@@ -47,5 +49,18 @@ public class Main implements Runnable {
                 System.err.println("Failed to parse " + path + ": " + e.getMessage());
             }
         }
+    }
+
+    private InputStream openInput(String path) throws IOException {
+        InputStream base = new FileInputStream(path);
+        BufferedInputStream buffered = new BufferedInputStream(base);
+        buffered.mark(2);
+        int b1 = buffered.read();
+        int b2 = buffered.read();
+        buffered.reset();
+        if (b1 == 0x1f && b2 == 0x8b) {
+            return new BufferedInputStream(new GZIPInputStream(buffered));
+        }
+        return buffered;
     }
 }
