@@ -30,8 +30,20 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "analyzer", mixinStandardHelpOptions = true,
+        versionProvider = Main.VersionProvider.class,
         description = "Analyze thread dump files")
 public class Main implements Runnable {
+
+    static class VersionProvider implements CommandLine.IVersionProvider {
+        @Override
+        public String[] getVersion() {
+            String v = Main.class.getPackage().getImplementationVersion();
+            if (v == null) {
+                v = "0.1.0-SNAPSHOT";
+            }
+            return new String[] { "Thread Dump Analyzer " + v };
+        }
+    }
 
     enum OutputFormat { text, json }
 
@@ -80,6 +92,9 @@ public class Main implements Runnable {
     @Option(names = "--clear-cache", description = "Clear cached dumps before running")
     private boolean clearCache = false;
 
+    @Option(names = "--list-parsers", description = "List supported dump formats")
+    private boolean listParsers = false;
+
     public static void main(String[] args) {
         System.exit(new CommandLine(new Main()).execute(args));
     }
@@ -94,6 +109,11 @@ public class Main implements Runnable {
 
         if (outputJson) {
             format = OutputFormat.json;
+        }
+
+        if (listParsers) {
+            ParserFactory.getSupportedFormats().forEach(System.out::println);
+            return;
         }
 
         if (timeline) {

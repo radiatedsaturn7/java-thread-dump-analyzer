@@ -17,7 +17,9 @@ import com.example.model.LockInfo;
 
 public class HotSpotParser implements ThreadDumpParser {
     private static final Pattern THREAD_HEADER =
-            Pattern.compile("^\"([^\"]+)\".*?nid=0x([0-9a-fA-F]+)");
+            Pattern.compile("^\"([^\"]+)\".*");
+    private static final Pattern PRIORITY = Pattern.compile("prio=(\\d+)");
+    private static final Pattern NID = Pattern.compile("nid=0x([0-9a-fA-F]+)");
     private static final Pattern STATE_LINE =
             Pattern.compile("^\\s*java\\.lang\\.Thread.State: (\\S+)");
     private static final Pattern FRAME_LINE =
@@ -28,15 +30,39 @@ public class HotSpotParser implements ThreadDumpParser {
             Pattern.compile("-\\s+parking to wait for\\s+<([^>]+)> \\(([^)]+)\\)");
     private static final Pattern LOCKED_LINE =
             Pattern.compile("-\\s+locked <([^>]+)> \\(([^)]+)\\)");
+    private static final Pattern HEADER_LINE =
+            Pattern.compile("^Full thread dump (.*):");
+    private static final Pattern UPTIME_LINE =
+            Pattern.compile("VM uptime:?\\s*(\\d+(?:\\.\\d+)?)\\s*secs", Pattern.CASE_INSENSITIVE);
 
     @Override
     public ThreadDump parse(InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         List<ThreadInfo> threads = new ArrayList<>();
 
-        String line;
+        String line = reader.readLine();
+        String jvmVersion = null;
+        long uptime = -1;
+        if (line != null) {
+            Matcher m = HEADER_LINE.matcher(line);
+            if (m.find()) {
+                jvmVersion = m.group(1).trim();
+            }
+            Matcher up = UPTIME_LINE.matcher(line);
+            if (up.find()) {
+                try {
+                    double secs = Double.parseDouble(up.group(1));
+                    uptime = (long) (secs * 1000);
+                } catch (NumberFormatException e) {
+                    uptime = -1;
+                }
+            }
+        }
+
         String currentName = null;
         long currentId = -1;
+        int currentPrio = -1;
+        boolean currentDaemon = false;
         Thread.State currentState = Thread.State.NEW;
         List<StackFrame> currentStack = new ArrayList<>();
         List<LockInfo> currentLocked = new ArrayList<>();
@@ -47,21 +73,33 @@ public class HotSpotParser implements ThreadDumpParser {
             if (header.find()) {
                 if (currentName != null) {
                     threads.add(new ThreadInfo(currentId, currentName, currentState,
-                            currentStack, currentLocked, waitingOn));
+                            currentStack, currentLocked, waitingOn, currentPrio, currentDaemon));
                     currentStack = new ArrayList<>();
                     currentLocked = new ArrayList<>();
                     waitingOn = null;
                 }
                 currentName = header.group(1);
-                if (header.group(2) != null) {
+                Matcher nidM = NID.matcher(line);
+                if (nidM.find()) {
                     try {
-                        currentId = Long.parseLong(header.group(2), 16);
+                        currentId = Long.parseLong(nidM.group(1), 16);
                     } catch (NumberFormatException e) {
                         currentId = -1;
                     }
                 } else {
                     currentId = -1;
                 }
+                Matcher prioM = PRIORITY.matcher(line);
+                if (prioM.find()) {
+                    try {
+                        currentPrio = Integer.parseInt(prioM.group(1));
+                    } catch (NumberFormatException e) {
+                        currentPrio = -1;
+                    }
+                } else {
+                    currentPrio = -1;
+                }
+                currentDaemon = line.contains(" daemon ");
                 currentState = Thread.State.NEW;
                 continue;
             }
@@ -118,9 +156,9 @@ public class HotSpotParser implements ThreadDumpParser {
 
         if (currentName != null) {
             threads.add(new ThreadInfo(currentId, currentName, currentState, currentStack,
-                    currentLocked, waitingOn));
+                    currentLocked, waitingOn, currentPrio, currentDaemon));
         }
 
-        return new ThreadDump(Instant.now(), threads);
+        return new ThreadDump(Instant.now(), threads, null, jvmVersion, uptime);
     }
 }

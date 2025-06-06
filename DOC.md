@@ -77,6 +77,9 @@ The CLI can output results in JSON format instead of plain text with `--format j
 ```bash
 java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --format json dump.txt
 ```
+When using the custom JSON dump format, you can include optional fields such as
+`jvmVersion` and `jvmUptime` at the root, and `priority` and `daemon` for each
+thread entry. These values are parsed if present.
 You can also use the convenience option `--output-json` which is equivalent to
 specifying `--format json`:
 ```bash
@@ -107,6 +110,18 @@ Clear any cached dumps before running with `--clear-cache`:
 
 ```bash
 java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --clear-cache dump.txt
+```
+
+List the supported thread dump formats with `--list-parsers`:
+
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --list-parsers
+```
+
+Show the application version with `--version`:
+
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --version
 ```
 
 ## Running the Web Server (Experimental)

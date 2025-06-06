@@ -1,10 +1,14 @@
 {
   "timestamp": "2024-01-01T00:00:00Z",
+  "jvmVersion": "OpenJDK 17",
+  "jvmUptime": 12345,
   "threads": [
     {
       "id": 1,
       "name": "main",
       "state": "RUNNABLE",
+      "priority": 5,
+      "daemon": true,
       "stack": [
         {"className":"example.Main","methodName":"main","fileName":"Main.java","lineNumber":1}
       ],
@@ -16,6 +20,8 @@
       "id": 2,
       "name": "worker",
       "state": "WAITING",
+      "priority": 5,
+      "daemon": false,
       "stack": [
         {"className":"example.Worker","methodName":"run","fileName":"Worker.java","lineNumber":10}
       ],

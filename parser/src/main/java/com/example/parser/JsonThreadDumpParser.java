@@ -25,6 +25,8 @@ public class JsonThreadDumpParser implements ThreadDumpParser {
         try {
             JSONObject root = (JSONObject) parser.parse(new InputStreamReader(in, StandardCharsets.UTF_8));
             Instant ts = Instant.now();
+            String jvmVersion = null;
+            long uptime = -1;
             Object tsVal = root.get("timestamp");
             if (tsVal instanceof String) {
                 try {
@@ -32,6 +34,14 @@ public class JsonThreadDumpParser implements ThreadDumpParser {
                 } catch (Exception e) {
                     // ignore and use current time
                 }
+            }
+            Object verVal = root.get("jvmVersion");
+            if (verVal instanceof String) {
+                jvmVersion = (String) verVal;
+            }
+            Object upVal = root.get("jvmUptime");
+            if (upVal instanceof Number) {
+                uptime = ((Number) upVal).longValue();
             }
 
             List<ThreadInfo> threads = new ArrayList<>();
@@ -46,6 +56,12 @@ public class JsonThreadDumpParser implements ThreadDumpParser {
                     if (idObj instanceof Number) {
                         id = ((Number) idObj).longValue();
                     }
+                    int prio = -1;
+                    Object prioObj = t.get("priority");
+                    if (prioObj instanceof Number) {
+                        prio = ((Number) prioObj).intValue();
+                    }
+                    boolean daemonFlag = Boolean.TRUE.equals(t.get("daemon"));
                     String name = String.valueOf(t.getOrDefault("name", "unknown"));
                     String stateStr = String.valueOf(t.getOrDefault("state", "RUNNABLE"));
                     Thread.State state;
@@ -94,11 +110,11 @@ public class JsonThreadDumpParser implements ThreadDumpParser {
                         waiting = new LockInfo(cls, ident);
                     }
 
-                    threads.add(new ThreadInfo(id, name, state, stack, locked, waiting));
+                    threads.add(new ThreadInfo(id, name, state, stack, locked, waiting, prio, daemonFlag));
                 }
             }
 
-            return new ThreadDump(ts, threads);
+            return new ThreadDump(ts, threads, null, jvmVersion, uptime);
         } catch (ParseException e) {
             throw new IOException("Invalid JSON", e);
         }

@@ -37,7 +37,7 @@ public class AndroidArtParser implements ThreadDumpParser {
             Matcher m = THREAD_HEADER.matcher(line);
             if (m.find()) {
                 if (name != null) {
-                    threads.add(new ThreadInfo(id, name, state, stack, null));
+                    threads.add(new ThreadInfo(id, name, state, stack, new ArrayList<>(), null, -1, false));
                     stack = new ArrayList<>();
                 }
                 name = m.group(1);
@@ -80,8 +80,8 @@ public class AndroidArtParser implements ThreadDumpParser {
             }
         }
         if (name != null) {
-            threads.add(new ThreadInfo(id, name, state, stack, null));
+            threads.add(new ThreadInfo(id, name, state, stack, new ArrayList<>(), null, -1, false));
         }
-        return new ThreadDump(Instant.now(), threads);
+        return new ThreadDump(Instant.now(), threads, null, null, -1);
     }
 }

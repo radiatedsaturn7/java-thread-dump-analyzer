@@ -8,6 +8,22 @@ import java.io.InputStreamReader;
 public final class ParserFactory {
     private ParserFactory() {}
 
+    private static final String[] SUPPORTED_FORMATS = {
+            "HotSpot",
+            "hs_err_pid",
+            "OpenJ9",
+            "Android ART",
+            "JSON"
+    };
+
+    /**
+     * Return a list of human readable names of supported dump formats.
+     */
+    public static java.util.List<String> getSupportedFormats() {
+        return java.util.Collections.unmodifiableList(
+                java.util.Arrays.asList(SUPPORTED_FORMATS));
+    }
+
     public static ThreadDumpParser detect(InputStream in) throws IOException {
         in.mark(1024);
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
