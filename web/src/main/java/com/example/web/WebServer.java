@@ -3,11 +3,11 @@ package com.example.web;
 import java.net.InetSocketAddress;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.ByteArrayInputStream;
-import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Deque;
 import java.util.ArrayDeque;
+
+import com.example.analysis.DumpCache;
 
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.Part;
@@ -49,6 +49,7 @@ public class WebServer {
         ServletHolder uploadHolder = new ServletHolder(new UploadServlet());
         uploadHolder.getRegistration().setMultipartConfig(new MultipartConfigElement("/tmp"));
         context.addServlet(uploadHolder, "/upload");
+        context.addServlet(new ServletHolder(new ClearCacheServlet()), "/clear");
 
         server.setHandler(context);
 
@@ -79,25 +80,14 @@ public class WebServer {
             w.println("<textarea name='textdump' rows='15' cols='80'></textarea><br/>");
             w.println("<input type='submit' value='Analyze'/>");
             w.println("</form>");
+            w.println("<form method='POST' action='/clear'>");
+            w.println("<input type='submit' value='Clear Cache'/>");
+            w.println("</form>");
             w.println("</body></html>");
         }
     }
 
     static class UploadServlet extends HttpServlet {
-        private static final int MAX_CACHE_ENTRIES = 10;
-        private static final Map<String, ThreadDump> CACHE =
-                java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>(16, 0.75f, true) {
-                    @Override
-                    protected boolean removeEldestEntry(Map.Entry<String, ThreadDump> eldest) {
-                        return size() > MAX_CACHE_ENTRIES;
-                    }
-                });
-
-        private static String digest(byte[] data) throws Exception {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(data);
-            return java.util.HexFormat.of().formatHex(hash);
-        }
 
         @Override
         protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws javax.servlet.ServletException, java.io.IOException {
@@ -124,6 +114,19 @@ public class WebServer {
             }
             if (parsed.size() == 2) {
                 writeDiff(parsed.get(0), parsed.get(1), w);
+            }
+            if (parsed.size() >= 2) {
+                ThreadDumpAnalyzer analyzer = new ThreadDumpAnalyzer();
+                java.util.List<com.example.model.ThreadInfo> high =
+                        analyzer.findHighCpuThreads(parsed);
+                if (!high.isEmpty()) {
+                    w.println("<h2>High CPU thread candidates</h2>");
+                    w.println("<ul>");
+                    for (var t : high) {
+                        w.println("<li>" + t.getName() + " (" + t.getId() + ")</li>");
+                    }
+                    w.println("</ul>");
+                }
             }
             w.println("<a href='/'>Upload another file</a>");
             w.println("</body></html>");
@@ -159,16 +162,7 @@ public class WebServer {
         }
 
         private ThreadDump getOrParse(byte[] bytes) throws Exception {
-            String key = digest(bytes);
-            ThreadDump dump = CACHE.get(key);
-            if (dump == null) {
-                try (InputStream detect = new ByteArrayInputStream(bytes)) {
-                    ThreadDumpParser parser = ParserFactory.detect(detect);
-                    dump = parser.parse(new ByteArrayInputStream(bytes));
-                }
-                CACHE.put(key, dump);
-            }
-            return dump;
+            return DumpCache.load(bytes);
         }
 
         private void writeCounts(String title, ThreadDump dump, PrintWriter w) {
@@ -208,6 +202,20 @@ public class WebServer {
                 }
                 w.println("</ul>");
             }
+        }
+    }
+
+    static class ClearCacheServlet extends HttpServlet {
+        @Override
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+                throws javax.servlet.ServletException, java.io.IOException {
+            DumpCache.clear();
+            resp.setContentType("text/html");
+            PrintWriter w = resp.getWriter();
+            w.println("<html><body>");
+            w.println("<p>Cache cleared.</p>");
+            w.println("<a href='/'>Back</a>");
+            w.println("</body></html>");
         }
     }
 }

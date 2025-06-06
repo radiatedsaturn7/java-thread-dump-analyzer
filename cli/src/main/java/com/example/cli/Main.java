@@ -12,10 +12,12 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Collectors;
+import java.nio.file.Path;
 
 import com.example.analysis.ThreadDumpAnalyzer;
 import com.example.analysis.DeadlockInfo;
 import com.example.analysis.ThreadDelta;
+import com.example.analysis.DumpCache;
 import com.example.model.ThreadDump;
 import com.example.model.ThreadInfo;
 import com.example.model.StackFrame;
@@ -72,6 +74,12 @@ public class Main implements Runnable {
     @Option(names = "--starvation", description = "Detect thread pool starvation across dumps")
     private boolean starvation = false;
 
+    @Option(names = "--label", paramLabel = "NAME", description = "Custom label for each dump (can be repeated)")
+    private List<String> labels = new ArrayList<>();
+
+    @Option(names = "--clear-cache", description = "Clear cached dumps before running")
+    private boolean clearCache = false;
+
     public static void main(String[] args) {
         System.exit(new CommandLine(new Main()).execute(args));
     }
@@ -79,6 +87,10 @@ public class Main implements Runnable {
     @Override
     public void run() {
         ThreadDumpAnalyzer analyzer = new ThreadDumpAnalyzer();
+
+        if (clearCache) {
+            DumpCache.clear();
+        }
 
         if (outputJson) {
             format = OutputFormat.json;
@@ -92,16 +104,13 @@ public class Main implements Runnable {
             try {
                 List<Map<Thread.State, Long>> timelineData = new ArrayList<>();
                 for (String path : files) {
-                    try (InputStream in = openInput(path)) {
-                        ThreadDumpParser parser = ParserFactory.detect(in);
-                        ThreadDump dump = parser.parse(in);
-                        timelineData.add(analyzer.computeStateCounts(dump));
-                    }
+                    ThreadDump dump = DumpCache.load(Path.of(path));
+                    timelineData.add(analyzer.computeStateCounts(dump));
                 }
 
                 if (format == OutputFormat.text) {
                     for (int i = 0; i < files.size(); i++) {
-                        System.out.println("Dump " + (i + 1) + " (" + files.get(i) + "):");
+                        System.out.println("Dump " + (i + 1) + " (" + getLabel(i, files.get(i)) + "):");
                         Map<Thread.State, Long> counts = timelineData.get(i);
                         for (var e : counts.entrySet()) {
                             System.out.printf("  %s: %d%n", e.getKey(), e.getValue());
@@ -113,7 +122,7 @@ public class Main implements Runnable {
                     for (int i = 0; i < files.size(); i++) {
                         if (i > 0) sb.append(',');
                         sb.append('{');
-                        sb.append("\"file\": \"").append(files.get(i).replace("\"", "\\\"")).append("\", \"counts\": {");
+                        sb.append("\"file\": \"").append(getLabel(i, files.get(i)).replace("\"", "\\\"")).append("\", \"counts\": {");
                         boolean first = true;
                         for (var e : timelineData.get(i).entrySet()) {
                             if (!first) sb.append(',');
@@ -125,7 +134,7 @@ public class Main implements Runnable {
                     sb.append(']');
                     System.out.println(sb.toString());
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.err.println("Failed to parse dumps: " + e.getMessage());
             }
             return;
@@ -139,11 +148,7 @@ public class Main implements Runnable {
             try {
                 List<ThreadDump> dumps = new ArrayList<>();
                 for (String path : files) {
-                    try (InputStream in = openInput(path)) {
-                        ThreadDumpParser parser = ParserFactory.detect(in);
-                        ThreadDump dump = parser.parse(in);
-                        dumps.add(dump);
-                    }
+                    dumps.add(DumpCache.load(Path.of(path)));
                 }
                 List<ThreadInfo> high = analyzer.findHighCpuThreads(dumps);
                 if (format == OutputFormat.text) {
@@ -163,7 +168,7 @@ public class Main implements Runnable {
                     sb.append("]}");
                     System.out.println(sb.toString());
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.err.println("Failed to parse dumps: " + e.getMessage());
             }
             return;
@@ -173,11 +178,7 @@ public class Main implements Runnable {
             try {
                 List<ThreadDump> dumps = new ArrayList<>();
                 for (String path : files) {
-                    try (InputStream in = openInput(path)) {
-                        ThreadDumpParser parser = ParserFactory.detect(in);
-                        ThreadDump dump = parser.parse(in);
-                        dumps.add(dump);
-                    }
+                    dumps.add(DumpCache.load(Path.of(path)));
                 }
                 List<String> pools = analyzer.detectThreadPoolStarvation(dumps);
                 if (format == OutputFormat.text) {
@@ -199,7 +200,7 @@ public class Main implements Runnable {
                     sb.append("]}");
                     System.out.println(sb.toString());
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.err.println("Failed to parse dumps: " + e.getMessage());
             }
             return;
@@ -210,12 +211,9 @@ public class Main implements Runnable {
                 System.err.println("--diff requires exactly two FILE arguments");
                 return;
             }
-            try (InputStream in1 = openInput(files.get(0));
-                 InputStream in2 = openInput(files.get(1))) {
-                ThreadDumpParser p1 = ParserFactory.detect(in1);
-                ThreadDump d1 = p1.parse(in1);
-                ThreadDumpParser p2 = ParserFactory.detect(in2);
-                ThreadDump d2 = p2.parse(in2);
+            try {
+                ThreadDump d1 = DumpCache.load(Path.of(files.get(0)));
+                ThreadDump d2 = DumpCache.load(Path.of(files.get(1)));
 
                 ThreadDelta delta = analyzer.diff(d1, d2);
                 Map<ThreadInfo, Thread.State> changes = analyzer.findStateChanges(d1, d2);
@@ -238,8 +236,8 @@ public class Main implements Runnable {
                 } else {
                     StringBuilder sb = new StringBuilder();
                     sb.append('{');
-                    sb.append("\"file1\": \"").append(files.get(0).replace("\"", "\\\"")).append("\",");
-                    sb.append(" \"file2\": \"").append(files.get(1).replace("\"", "\\\"")).append("\",");
+                    sb.append("\"file1\": \"").append(getLabel(0, files.get(0)).replace("\"", "\\\"")).append("\",");
+                    sb.append(" \"file2\": \"").append(getLabel(1, files.get(1)).replace("\"", "\\\"")).append("\",");
                     sb.append(" \"newThreads\": [");
                     for (int i = 0; i < delta.getNewThreads().size(); i++) {
                         ThreadInfo t = delta.getNewThreads().get(i);
@@ -268,19 +266,20 @@ public class Main implements Runnable {
                     sb.append(']').append('}');
                     System.out.println(sb.toString());
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.err.println("Failed to parse dumps: " + e.getMessage());
             }
             return;
         }
 
-        for (String path : files) {
-            try (InputStream in = openInput(path)) {
-                ThreadDumpParser parser = ParserFactory.detect(in);
-                ThreadDump dump = parser.parse(in);
+        for (int fi = 0; fi < files.size(); fi++) {
+            String path = files.get(fi);
+            try {
+                ThreadDump dump = DumpCache.load(Path.of(path));
+                dump = new ThreadDump(dump.getTimestamp(), dump.getThreads(), getLabel(fi, path));
 
                 if (format == OutputFormat.text) {
-                    System.out.println("File: " + path);
+                    System.out.println("File: " + getLabel(fi, path));
                 }
 
                 Map<Thread.State, Long> counts = null;
@@ -346,7 +345,7 @@ public class Main implements Runnable {
                 } else { // json output
                     StringBuilder sb = new StringBuilder();
                     sb.append('{');
-                    sb.append("\"file\": \"").append(path.replace("\"", "\\\"")).append("\"");
+                    sb.append("\"file\": \"").append(getLabel(fi, path).replace("\"", "\\\"")).append("\"");
                     if (counts != null) {
                         sb.append(", \"counts\": {");
                         boolean first = true;
@@ -391,7 +390,7 @@ public class Main implements Runnable {
                     sb.append('}');
                     System.out.println(sb.toString());
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.err.println("Failed to parse " + path + ": " + e.getMessage());
             }
         }
@@ -407,6 +406,13 @@ public class Main implements Runnable {
                 System.err.println("Failed to open " + out + ": " + e.getMessage());
             }
         }
+    }
+
+    private String getLabel(int index, String path) {
+        if (index < labels.size()) {
+            return labels.get(index);
+        }
+        return path;
     }
 
     private InputStream openInput(String path) throws IOException {
