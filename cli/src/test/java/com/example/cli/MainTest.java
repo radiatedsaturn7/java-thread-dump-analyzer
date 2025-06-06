@@ -101,4 +101,22 @@ public class MainTest {
         assertTrue(output.contains("Potential thread pool starvation"));
         java.nio.file.Files.deleteIfExists(file);
     }
+
+    @Test
+    public void customLabelDisplayed() {
+        String path = getClass().getResource("/hotspot.txt").getPath();
+        int code = new CommandLine(new Main()).execute("--label", "MyDump", path);
+        assertEquals(0, code);
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("MyDump"));
+    }
+
+    @Test
+    public void clearCacheFlag() {
+        String path = getClass().getResource("/hotspot.txt").getPath();
+        int code = new CommandLine(new Main()).execute("--clear-cache", path);
+        assertEquals(0, code);
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertFalse(output.contains("Error"));
+    }
 }

@@ -33,7 +33,7 @@
 - [ ] Provide advisory engine with heuristic checks for common thread anti-patterns.
  - [x] Flag potential high CPU threads appearing RUNNABLE across dumps.
  - [x] Expose high CPU thread warnings in CLI and web UI.
-- [ ] Display high CPU thread warnings in the web UI.
+ - [x] Display high CPU thread warnings in the web UI.
 - [x] Detect thread pool starvation and provide advisory message.
 - [ ] Integrate optional CPU usage data (e.g., from `top -H`) to correlate CPU percentage with thread IDs.
 - [ ] Categorize threads into JVM internal vs application threads for filtering and grouping.
@@ -55,8 +55,9 @@
 - [x] Add CLI command to display stack trace hotspots.
 - [x] Add CLI option `--output-json` to export analysis results in JSON format.
 - [x] Add CLI option `--open` to automatically launch generated HTML reports in the default browser.
-- [ ] Add CLI option `--label <NAME>` to assign a custom label to a thread dump.
-- [ ] Add CLI option `--clear-cache` to purge any cached dumps.
+ - [x] Add CLI option `--label <NAME>` to assign a custom label to a thread dump.
+ - [x] Add CLI option `--clear-cache` to purge any cached dumps.
+ - [ ] Add CLI option `--list-parsers` to print supported dump formats.
 
 ## Web Interface
  - [x] Launch embedded Jetty server with upload form for thread dump files.
@@ -82,7 +83,7 @@
 - [ ] Allow setting custom labels for uploaded dumps.
 - [ ] Enable selecting two specific dumps for side-by-side diff view.
 - [ ] Link waiting threads to the owning thread of each blocking lock in the UI.
-- [ ] Provide a button to clear cached dumps.
+ - [x] Provide a button to clear cached dumps.
 
 ## Visualization
 - [ ] Provide flame graph visualization for stack trace hotspots.

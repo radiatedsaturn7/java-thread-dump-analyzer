@@ -97,6 +97,18 @@ it in your browser by adding `--open`:
 java -jar cli/target/cli-0.1.0-SNAPSHOT.jar -o report.html --open dump.txt
 ```
 
+You can give a thread dump a custom label for display using `--label`:
+
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --label MyDump dump.txt
+```
+
+Clear any cached dumps before running with `--clear-cache`:
+
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --clear-cache dump.txt
+```
+
 ## Running the Web Server (Experimental)
 
 A minimal Jetty server is provided. Start it with:
@@ -116,10 +128,14 @@ Parsed dumps are cached in memory so uploading the same file again will reuse
 the cached result and return counts more quickly. The cache holds up to ten
 distinct dumps; when it grows beyond this size the least recently used entry
 is evicted to free memory.
+You can clear all cached dumps at any time using the **Clear Cache** button on
+the upload page.
 Recent file names are listed on the upload page so you can see which
 dumps were analyzed most recently.
 If you upload exactly two dumps at once the server will also display which
 threads are new in the second dump and which disappeared since the first.
+If multiple dumps are uploaded, the server also lists any threads that remain
+`RUNNABLE` in all of them as potential **high CPU** candidates.
 
 ## Keeping This Guide Updated
 
