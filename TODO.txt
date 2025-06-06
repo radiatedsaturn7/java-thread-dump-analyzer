@@ -41,7 +41,8 @@
 - [x] Implement command line interface using a parsing library (e.g., Picocli).
 - [ ] Support options for output format and selecting analysis features.
 - [ ] Add CLI option `--show-deadlocks-only` to display only detected deadlocks.
-- [ ] Add CLI option `--filter-state <STATE>` to show only threads in a given state.
+- [x] Add CLI option `--filter-state <STATE>` to show only threads in a given state.
+- [ ] Add CLI command to display stack trace hotspots.
 
 ## Web Interface
  - [ ] Launch embedded Jetty server with upload form for thread dump files.
@@ -76,4 +77,4 @@
 ## Documentation
 - [x] Expand README with usage instructions for both CLI and web interfaces.
 
-- [ ] Write DOC.md with a user guide for CLI and web interface.
+- [x] Write DOC.md with a user guide for CLI and web interface.

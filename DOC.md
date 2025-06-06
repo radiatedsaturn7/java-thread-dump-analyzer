@@ -22,6 +22,11 @@ java -jar cli/target/cli-0.1.0-SNAPSHOT.jar dump1.txt dump2.txt
 
 Gzip-compressed files (`.gz`) are detected automatically.
 The analyzer prints a count of threads by state for each file.
+To list only threads in a specific state, use:
+
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --filter-state RUNNABLE dump.txt
+```
 
 ## Running the Web Server (Experimental)
 
