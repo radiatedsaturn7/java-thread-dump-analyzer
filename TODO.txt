@@ -15,6 +15,7 @@
 - [x] Implement parser factory/format detector to choose parser based on file content.
 - [x] Implement `JsonThreadDumpParser` for JSON-based dumps.
 - [x] Support parsing of GZip-compressed thread dump files.
+- [x] Implement `AndroidArtParser` for Android ART thread dumps.
 
 ## Analysis Engine
  - [x] Compute thread state statistics per dump.
@@ -31,9 +32,11 @@
 - [ ] Provide advisory engine with heuristic checks for common thread anti-patterns.
  - [x] Flag potential high CPU threads appearing RUNNABLE across dumps.
  - [x] Expose high CPU thread warnings in CLI and web UI.
- - [ ] Display high CPU thread warnings in the web UI.
+- [ ] Display high CPU thread warnings in the web UI.
+- [x] Detect thread pool starvation and provide advisory message.
 - [ ] Integrate optional CPU usage data (e.g., from `top -H`) to correlate CPU percentage with thread IDs.
 - [ ] Categorize threads into JVM internal vs application threads for filtering and grouping.
+- [ ] Support custom thread name pattern groups for thread pool analysis.
  - [x] Release old `ThreadDump` objects from memory after analysis to conserve RAM when many dumps are loaded.
 
 ## Reporting & Export
@@ -49,6 +52,8 @@
  - [x] Add CLI option `--show-deadlocks-only` to display only detected deadlocks.
 - [x] Add CLI option `--filter-state <STATE>` to show only threads in a given state.
 - [x] Add CLI command to display stack trace hotspots.
+- [x] Add CLI option `--output-json` to export analysis results in JSON format.
+- [x] Add CLI option `--open` to automatically launch generated HTML reports in the default browser.
 
 ## Web Interface
  - [x] Launch embedded Jetty server with upload form for thread dump files.
@@ -66,9 +71,11 @@
 - [ ] Add interactive stack trace viewer with highlighting of blocking lines.
 - [ ] Display grouped identical stack traces in the web UI with counts and expand option.
 - [ ] Parse uploaded files asynchronously to keep the UI responsive.
+- [ ] Show progress indicator while parsing and analyzing uploads.
  - [x] Cache parsed dumps in memory to avoid reprocessing on each request.
 - [x] Allow configuring the web server port via CLI option or environment variable.
-- [x] Bind web server to localhost by default to avoid remote exposure.
+ - [x] Bind web server to localhost by default to avoid remote exposure.
+- [ ] Allow managing multiple analysis sessions in the web UI.
 
 ## Visualization
 - [ ] Provide flame graph visualization for stack trace hotspots.
@@ -83,6 +90,7 @@
 - [x] Provide sample thread dumps for test fixtures.
 - [x] Add CLI integration tests using the sample thread dumps.
  - [x] Add sample thread dumps for web interface tests and verify upload handling.
+- [ ] Add parser tests with unusual thread names and Android ART dumps.
 
 ## Documentation
 - [x] Expand README with usage instructions for both CLI and web interfaces.

@@ -83,4 +83,22 @@ public class MainTest {
         assertTrue(output.contains("main"));
         assertTrue(output.contains("worker-2"));
     }
+
+    @Test
+    public void starvationDetection() throws Exception {
+        String dump = "Full thread dump Java HotSpot(TM) 64-Bit Server VM (17.0.1):\n\n" +
+                "\"pool-1-thread-1\" #1 prio=5 os_prio=0 tid=0x1 nid=0x1 waiting on condition [0x0]\n" +
+                "   java.lang.Thread.State: WAITING (on object monitor)\n" +
+                "    at java.lang.Object.wait(Native Method)\n\n" +
+                "\"pool-1-thread-2\" #2 prio=5 os_prio=0 tid=0x2 nid=0x2 waiting on condition [0x0]\n" +
+                "   java.lang.Thread.State: WAITING (on object monitor)\n" +
+                "    at java.lang.Object.wait(Native Method)\n";
+        java.nio.file.Path file = java.nio.file.Files.createTempFile("dump", ".txt");
+        java.nio.file.Files.writeString(file, dump);
+        int code = new CommandLine(new Main()).execute("--starvation", file.toString());
+        assertEquals(0, code);
+        String output = out.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("Potential thread pool starvation"));
+        java.nio.file.Files.deleteIfExists(file);
+    }
 }

@@ -40,6 +40,7 @@ fastthread.io
 IBM/Eclipse OpenJ9 javacore dumps: OpenJ9 (formerly IBM J9) produces thread dumps in a structured text format often called javacore (e.g. files named javacore.DATE.TIME.pid.txt). These have a different syntax – threads are listed under sections with identifiers like 1XMTHDINFO, 3XMTHREADINFO etc., and thread states might be denoted by abbreviations (e.g., R for runnable, CW for conditional wait). The OpenJ9Parser will recognize these tokens and parse accordingly. It will convert IBM-specific state codes to the standard Java Thread.State where possible. For example, older IBM dumps might label certain threads as Conditional Wait (CW) which correspond to a thread that is actually waiting (or was runnable but waiting on a condition)
 publib.boulder.ibm.com
 . The parser will map those to a WAITING or BLOCKED state with additional info as needed. By supporting javacore dumps, the tool covers OpenJ9 and IBM JDK users
+Android ART dumps: Thread dumps produced on Android devices (via `kill -3`) are recognized by the AndroidArtParser.
 fastthread.io
 .
 Other formats: The architecture anticipates that some tools or APMs output thread dumps in JSON or other structured formats. As noted by prior art, thread dump format can vary by Java version, JVM vendor, and tooling (even JSON in some cases)
@@ -455,6 +456,7 @@ fastthread.io
 IBM/Eclipse OpenJ9 javacore dumps: OpenJ9 (formerly IBM J9) produces thread dumps in a structured text format often called javacore (e.g. files named javacore.DATE.TIME.pid.txt). These have a different syntax – threads are listed under sections with identifiers like 1XMTHDINFO, 3XMTHREADINFO etc., and thread states might be denoted by abbreviations (e.g., R for runnable, CW for conditional wait). The OpenJ9Parser will recognize these tokens and parse accordingly. It will convert IBM-specific state codes to the standard Java Thread.State where possible. For example, older IBM dumps might label certain threads as Conditional Wait (CW) which correspond to a thread that is actually waiting (or was runnable but waiting on a condition)
 publib.boulder.ibm.com
 . The parser will map those to a WAITING or BLOCKED state with additional info as needed. By supporting javacore dumps, the tool covers OpenJ9 and IBM JDK users
+Android ART dumps: Thread dumps produced on Android devices (via `kill -3`) are recognized by the AndroidArtParser.
 fastthread.io
 .
 Other formats: The architecture anticipates that some tools or APMs output thread dumps in JSON or other structured formats. As noted by prior art, thread dump format can vary by Java version, JVM vendor, and tooling (even JSON in some cases)

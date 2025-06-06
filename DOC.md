@@ -64,6 +64,12 @@ To find threads that remain RUNNABLE across multiple dumps, pass `--highcpu` wit
 java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --highcpu dump1.txt dump2.txt
 ```
 
+To check for potential thread pool starvation across one or more dumps, use `--starvation`:
+
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --starvation dump1.txt dump2.txt
+```
+
 This prints the counts per dump or outputs JSON when combined with `--format json`.
 
 The CLI can output results in JSON format instead of plain text with `--format json`:
@@ -71,12 +77,24 @@ The CLI can output results in JSON format instead of plain text with `--format j
 ```bash
 java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --format json dump.txt
 ```
+You can also use the convenience option `--output-json` which is equivalent to
+specifying `--format json`:
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --output-json dump.txt
+```
 
 You can also control which analysis features are displayed by listing them with `--features`.
 Available options are `counts`, `deadlocks`, and `hotspots` (the default is all):
 
 ```bash
 java -jar cli/target/cli-0.1.0-SNAPSHOT.jar --features counts,hotspots dump.txt
+```
+
+If you generate an HTML report with `-o report.html`, you can automatically open
+it in your browser by adding `--open`:
+
+```bash
+java -jar cli/target/cli-0.1.0-SNAPSHOT.jar -o report.html --open dump.txt
 ```
 
 ## Running the Web Server (Experimental)
