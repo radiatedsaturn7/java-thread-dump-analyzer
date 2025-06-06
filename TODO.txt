@@ -26,7 +26,7 @@
  - [x] Support multi-dump comparison and timeline of thread states.
  - [ ] Visualize state timeline in the web UI.
 - [x] Highlight new and disappeared threads across dumps.
-- [ ] Highlight threads whose state changed across dumps.
+- [x] Highlight threads whose state changed across dumps.
 - [x] Show thread diff results in CLI and web UI.
  - [x] Display thread diff results in the web UI.
 - [x] Create `AnalysisSession` model to manage multiple `ThreadDump` objects.
@@ -56,6 +56,7 @@
 - [x] Add CLI option `--output-json` to export analysis results in JSON format.
 - [x] Add CLI option `--open` to automatically launch generated HTML reports in the default browser.
 - [ ] Add CLI option `--label <NAME>` to assign a custom label to a thread dump.
+- [ ] Add CLI option `--clear-cache` to purge any cached dumps.
 
 ## Web Interface
  - [x] Launch embedded Jetty server with upload form for thread dump files.
@@ -81,6 +82,7 @@
 - [ ] Allow setting custom labels for uploaded dumps.
 - [ ] Enable selecting two specific dumps for side-by-side diff view.
 - [ ] Link waiting threads to the owning thread of each blocking lock in the UI.
+- [ ] Provide a button to clear cached dumps.
 
 ## Visualization
 - [ ] Provide flame graph visualization for stack trace hotspots.

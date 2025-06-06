@@ -221,6 +221,28 @@ public class ThreadDumpAnalyzer {
     }
 
     /**
+     * Identify threads whose state changed between two dumps.
+     * The returned map contains threads from the later dump as keys and
+     * their state from the previous dump as the value.
+     *
+     * @param previous earlier dump
+     * @param current later dump
+     * @return map of changed threads to their previous state
+     */
+    public Map<ThreadInfo, Thread.State> findStateChanges(ThreadDump previous, ThreadDump current) {
+        Map<Long, ThreadInfo> prevById = previous.getThreads().stream()
+                .collect(Collectors.toMap(ThreadInfo::getId, Function.identity()));
+        Map<ThreadInfo, Thread.State> changed = new LinkedHashMap<>();
+        for (ThreadInfo t : current.getThreads()) {
+            ThreadInfo p = prevById.get(t.getId());
+            if (p != null && p.getState() != t.getState()) {
+                changed.put(t, p.getState());
+            }
+        }
+        return changed;
+    }
+
+    /**
      * Find threads that are RUNNABLE in every provided dump. Such threads may
      * be candidates for high CPU usage if they remain runnable across multiple
      * snapshots.
