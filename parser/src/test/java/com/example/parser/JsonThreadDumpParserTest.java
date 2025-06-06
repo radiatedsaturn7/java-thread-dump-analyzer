@@ -18,6 +18,10 @@ public class JsonThreadDumpParserTest {
             assertEquals(2, dump.getThreads().size());
             assertEquals("main", dump.getThreads().get(0).getName());
             assertEquals(Thread.State.RUNNABLE, dump.getThreads().get(0).getState());
+            assertEquals(5, dump.getThreads().get(0).getPriority());
+            assertTrue(dump.getThreads().get(0).isDaemon());
+            assertEquals("OpenJDK 17", dump.getJvmVersion());
+            assertEquals(12345L, dump.getUptimeMillis());
         }
     }
 }

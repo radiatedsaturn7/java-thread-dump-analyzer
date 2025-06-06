@@ -7,6 +7,9 @@
 
 ## Data Model
 - [x] Implement core data model classes: `ThreadDump`, `ThreadInfo`, `StackFrame`, `LockInfo`.
+- [x] Capture JVM metadata (version, uptime) from dumps and expose via `ThreadDump`.
+- [x] Capture thread priority and daemon flag in `ThreadInfo`.
+- [ ] Show priority and daemon status in CLI and web outputs.
 
 ## Parsing Layer
 - [x] Implement `HotSpotParser` for standard HotSpot thread dumps.
@@ -16,6 +19,7 @@
 - [x] Implement `JsonThreadDumpParser` for JSON-based dumps.
 - [x] Support parsing of GZip-compressed thread dump files.
 - [x] Implement `AndroidArtParser` for Android ART thread dumps.
+- [ ] Support parsing of ZIP archives containing multiple dumps.
 
 ## Analysis Engine
  - [x] Compute thread state statistics per dump.
@@ -57,7 +61,10 @@
 - [x] Add CLI option `--open` to automatically launch generated HTML reports in the default browser.
  - [x] Add CLI option `--label <NAME>` to assign a custom label to a thread dump.
  - [x] Add CLI option `--clear-cache` to purge any cached dumps.
- - [ ] Add CLI option `--list-parsers` to print supported dump formats.
+ - [x] Add CLI option `--list-parsers` to print supported dump formats.
+ - [x] Add CLI option `--version` to display tool version and exit.
+ - [ ] Add CLI option `--filter-name <PATTERN>` to filter threads by name.
+ - [ ] Provide option to limit stack trace depth in CLI output.
 
 ## Web Interface
  - [x] Launch embedded Jetty server with upload form for thread dump files.

@@ -31,6 +31,8 @@ public class OpenJ9Parser implements ThreadDumpParser {
         String line;
         String currentName = null;
         long currentId = -1;
+        int currentPrio = -1;
+        boolean currentDaemon = false;
         Thread.State currentState = Thread.State.NEW;
         List<StackFrame> currentStack = new ArrayList<>();
         List<LockInfo> currentLocked = new ArrayList<>();
@@ -41,7 +43,7 @@ public class OpenJ9Parser implements ThreadDumpParser {
             if (header.find()) {
                 if (currentName != null) {
                     threads.add(new ThreadInfo(currentId, currentName, currentState,
-                            currentStack, currentLocked, waitingOn));
+                            currentStack, currentLocked, waitingOn, currentPrio, currentDaemon));
                     currentStack = new ArrayList<>();
                     currentLocked = new ArrayList<>();
                     waitingOn = null;
@@ -49,6 +51,8 @@ public class OpenJ9Parser implements ThreadDumpParser {
                 currentName = header.group(1);
                 currentState = mapState(header.group(2));
                 currentId = -1;
+                currentPrio = -1;
+                currentDaemon = line.contains(" daemon ");
                 continue;
             }
 
@@ -84,10 +88,10 @@ public class OpenJ9Parser implements ThreadDumpParser {
         }
 
         if (currentName != null) {
-            threads.add(new ThreadInfo(currentId, currentName, currentState, currentStack, currentLocked, waitingOn));
+            threads.add(new ThreadInfo(currentId, currentName, currentState, currentStack, currentLocked, waitingOn, currentPrio, currentDaemon));
         }
 
-        return new ThreadDump(Instant.now(), threads);
+        return new ThreadDump(Instant.now(), threads, null, null, -1);
     }
 
     private Thread.State mapState(String code) {
