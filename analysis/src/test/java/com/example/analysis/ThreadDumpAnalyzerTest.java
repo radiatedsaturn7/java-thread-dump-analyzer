@@ -116,6 +116,18 @@ public class ThreadDumpAnalyzerTest {
     }
 
     @Test
+    public void detectsStateChangesBetweenDumps() {
+        ThreadInfo beforeThread = new ThreadInfo(1, "worker", Thread.State.RUNNABLE, List.of(), null);
+        ThreadInfo afterThread = new ThreadInfo(1, "worker", Thread.State.WAITING, List.of(), null);
+        ThreadDump before = new ThreadDump(java.time.Instant.now(), List.of(beforeThread));
+        ThreadDump after = new ThreadDump(java.time.Instant.now(), List.of(afterThread));
+        ThreadDumpAnalyzer analyzer = new ThreadDumpAnalyzer();
+        Map<ThreadInfo, Thread.State> changes = analyzer.findStateChanges(before, after);
+        assertEquals(1, changes.size());
+        assertEquals(Thread.State.RUNNABLE, changes.get(afterThread));
+    }
+
+    @Test
     public void detectsThreadPoolStarvation() {
         ThreadInfo t1 = new ThreadInfo(1, "pool-1-thread-1", Thread.State.WAITING, List.of(), null);
         ThreadInfo t2 = new ThreadInfo(2, "pool-1-thread-2", Thread.State.WAITING, List.of(), null);

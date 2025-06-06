@@ -185,6 +185,7 @@ public class WebServer {
         private void writeDiff(ThreadDump before, ThreadDump after, PrintWriter w) {
             ThreadDumpAnalyzer analyzer = new ThreadDumpAnalyzer();
             ThreadDelta delta = analyzer.diff(before, after);
+            Map<com.example.model.ThreadInfo, Thread.State> changes = analyzer.findStateChanges(before, after);
             w.println("<h2>Diff Results</h2>");
             w.println("<h3>New Threads</h3>");
             w.println("<ul>");
@@ -198,6 +199,15 @@ public class WebServer {
                 w.println("<li>" + t.getName() + " (" + t.getId() + ")</li>");
             }
             w.println("</ul>");
+            if (!changes.isEmpty()) {
+                w.println("<h3>State Changes</h3>");
+                w.println("<ul>");
+                for (var e : changes.entrySet()) {
+                    com.example.model.ThreadInfo t = e.getKey();
+                    w.println("<li>" + t.getName() + " (" + t.getId() + "): " + e.getValue() + " -> " + t.getState() + "</li>");
+                }
+                w.println("</ul>");
+            }
         }
     }
 }

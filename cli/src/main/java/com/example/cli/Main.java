@@ -218,6 +218,7 @@ public class Main implements Runnable {
                 ThreadDump d2 = p2.parse(in2);
 
                 ThreadDelta delta = analyzer.diff(d1, d2);
+                Map<ThreadInfo, Thread.State> changes = analyzer.findStateChanges(d1, d2);
                 if (format == OutputFormat.text) {
                     System.out.println("New threads: " + delta.getNewThreads().size());
                     for (ThreadInfo t : delta.getNewThreads()) {
@@ -226,6 +227,13 @@ public class Main implements Runnable {
                     System.out.println("Disappeared threads: " + delta.getDisappearedThreads().size());
                     for (ThreadInfo t : delta.getDisappearedThreads()) {
                         System.out.printf("  [%d] %s%n", t.getId(), t.getName());
+                    }
+                    if (!changes.isEmpty()) {
+                        System.out.println("Threads with state changes: " + changes.size());
+                        for (Map.Entry<ThreadInfo, Thread.State> e : changes.entrySet()) {
+                            ThreadInfo t = e.getKey();
+                            System.out.printf("  [%d] %s: %s -> %s%n", t.getId(), t.getName(), e.getValue(), t.getState());
+                        }
                     }
                 } else {
                     StringBuilder sb = new StringBuilder();
@@ -245,6 +253,17 @@ public class Main implements Runnable {
                         if (i > 0) sb.append(',');
                         sb.append('{').append("\"id\": ").append(t.getId())
                           .append(", \"name\": \"").append(t.getName().replace("\"", "\\\"")).append("\"}");
+                    }
+                    sb.append("], \"stateChanges\": [");
+                    int j = 0;
+                    for (Map.Entry<ThreadInfo, Thread.State> e : changes.entrySet()) {
+                        if (j++ > 0) sb.append(',');
+                        ThreadInfo t = e.getKey();
+                        sb.append('{').append("\"id\": ").append(t.getId())
+                          .append(", \"name\": \"").append(t.getName().replace("\"", "\\\"") )
+                          .append("\", \"from\": \"").append(e.getValue())
+                          .append("\", \"to\": \"").append(t.getState())
+                          .append("\"}");
                     }
                     sb.append(']').append('}');
                     System.out.println(sb.toString());
