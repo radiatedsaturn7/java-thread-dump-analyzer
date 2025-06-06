@@ -114,4 +114,15 @@ public class ThreadDumpAnalyzerTest {
         assertTrue(names.contains("main"));
         assertTrue(names.contains("worker-2"));
     }
+
+    @Test
+    public void detectsThreadPoolStarvation() {
+        ThreadInfo t1 = new ThreadInfo(1, "pool-1-thread-1", Thread.State.WAITING, List.of(), null);
+        ThreadInfo t2 = new ThreadInfo(2, "pool-1-thread-2", Thread.State.WAITING, List.of(), null);
+        ThreadDump dump = new ThreadDump(java.time.Instant.now(), List.of(t1, t2));
+        ThreadDumpAnalyzer analyzer = new ThreadDumpAnalyzer();
+        List<String> pools = analyzer.detectThreadPoolStarvation(List.of(dump));
+        assertEquals(1, pools.size());
+        assertEquals("pool-1-thread", pools.get(0));
+    }
 }

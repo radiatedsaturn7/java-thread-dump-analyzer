@@ -28,6 +28,9 @@ public final class ParserFactory {
         if (header.contains("1XMTHREADINFO")) {
             return new OpenJ9Parser();
         }
+        if (header.contains("sysTid=") || header.contains("sCount=") || header.contains("| state=")) {
+            return new AndroidArtParser();
+        }
         if (header.trim().startsWith("{")) {
             return new JsonThreadDumpParser();
         }
