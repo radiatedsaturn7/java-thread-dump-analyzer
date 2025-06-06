@@ -250,4 +250,52 @@ public class ThreadDumpAnalyzer {
 
         return new ArrayList<>(candidates.values());
     }
+
+    /**
+     * Detect possible thread pool starvation. A pool is considered starved if
+     * all of its threads are not RUNNABLE across all provided dumps. Pool
+     * membership is determined by normalizing thread names (removing trailing
+     * numeric suffixes) and looking for common pool keywords such as
+     * "pool", "worker", or "executor".
+     *
+     * @param dumps list of thread dumps to inspect (one or more)
+     * @return list of normalized thread pool names that appear starved
+     */
+    public List<String> detectThreadPoolStarvation(List<ThreadDump> dumps) {
+        if (dumps == null || dumps.isEmpty()) {
+            return List.of();
+        }
+
+        Set<String> starved = null;
+        for (ThreadDump dump : dumps) {
+            Map<String, List<ThreadInfo>> groups = new HashMap<>();
+            for (ThreadInfo t : dump.getThreads()) {
+                String name = t.getName().replaceAll("[-_]?\\d+$", "");
+                groups.computeIfAbsent(name, k -> new ArrayList<>()).add(t);
+            }
+
+            Set<String> current = new HashSet<>();
+            for (Map.Entry<String, List<ThreadInfo>> e : groups.entrySet()) {
+                String keyLower = e.getKey().toLowerCase();
+                if (keyLower.contains("pool") || keyLower.contains("worker") || keyLower.contains("executor")) {
+                    boolean noneRunnable = e.getValue().stream()
+                            .noneMatch(t -> t.getState() == Thread.State.RUNNABLE);
+                    if (noneRunnable && e.getValue().size() > 1) {
+                        current.add(e.getKey());
+                    }
+                }
+            }
+
+            if (starved == null) {
+                starved = current;
+            } else {
+                starved.retainAll(current);
+            }
+        }
+
+        if (starved == null) {
+            return List.of();
+        }
+        return new ArrayList<>(starved);
+    }
 }

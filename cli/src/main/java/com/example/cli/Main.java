@@ -39,6 +39,12 @@ public class Main implements Runnable {
     @Option(names = {"-o", "--out"}, description = "Output file (currently ignored)")
     private String out;
 
+    @Option(names = "--output-json", description = "Export analysis results in JSON format")
+    private boolean outputJson = false;
+
+    @Option(names = "--open", description = "Open generated HTML report in the default browser")
+    private boolean open = false;
+
     @Option(names = "--filter-state", description = "Only show threads in the given state")
     private Thread.State filterState;
 
@@ -63,6 +69,9 @@ public class Main implements Runnable {
     @Option(names = "--highcpu", description = "Show threads runnable in all provided dumps")
     private boolean highCpu = false;
 
+    @Option(names = "--starvation", description = "Detect thread pool starvation across dumps")
+    private boolean starvation = false;
+
     public static void main(String[] args) {
         System.exit(new CommandLine(new Main()).execute(args));
     }
@@ -70,6 +79,10 @@ public class Main implements Runnable {
     @Override
     public void run() {
         ThreadDumpAnalyzer analyzer = new ThreadDumpAnalyzer();
+
+        if (outputJson) {
+            format = OutputFormat.json;
+        }
 
         if (timeline) {
             if (files.size() < 2) {
@@ -146,6 +159,42 @@ public class Main implements Runnable {
                         if (i > 0) sb.append(',');
                         sb.append('{').append("\"id\": ").append(t.getId())
                           .append(", \"name\": \"").append(t.getName().replace("\"", "\\\"")).append("\"}");
+                    }
+                    sb.append("]}");
+                    System.out.println(sb.toString());
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to parse dumps: " + e.getMessage());
+            }
+            return;
+        }
+
+        if (starvation) {
+            try {
+                List<ThreadDump> dumps = new ArrayList<>();
+                for (String path : files) {
+                    try (InputStream in = openInput(path)) {
+                        ThreadDumpParser parser = ParserFactory.detect(in);
+                        ThreadDump dump = parser.parse(in);
+                        dumps.add(dump);
+                    }
+                }
+                List<String> pools = analyzer.detectThreadPoolStarvation(dumps);
+                if (format == OutputFormat.text) {
+                    if (pools.isEmpty()) {
+                        System.out.println("No thread pool starvation detected.");
+                    } else {
+                        System.out.println("Potential thread pool starvation detected:");
+                        for (String p : pools) {
+                            System.out.println("  " + p);
+                        }
+                    }
+                } else {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append('{').append("\"starvedPools\": [");
+                    for (int i = 0; i < pools.size(); i++) {
+                        if (i > 0) sb.append(',');
+                        sb.append('"').append(pools.get(i).replace("\"", "\\\"")).append('"');
                     }
                     sb.append("]}");
                     System.out.println(sb.toString());
@@ -325,6 +374,18 @@ public class Main implements Runnable {
                 }
             } catch (IOException e) {
                 System.err.println("Failed to parse " + path + ": " + e.getMessage());
+            }
+        }
+
+        if (open && out != null) {
+            try {
+                if (java.awt.Desktop.isDesktopSupported()) {
+                    java.awt.Desktop.getDesktop().browse(new java.io.File(out).toURI());
+                } else {
+                    System.err.println("--open is not supported on this platform");
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to open " + out + ": " + e.getMessage());
             }
         }
     }
