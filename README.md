@@ -764,3 +764,8 @@ java -jar analyzer.jar
 Then open `http://localhost:8080` in your browser. Upload one or more thread
 dump files using the form and click **Analyze** to view charts and tables. The
 web interface also offers download links for PDF or CSV exports.
+
+### Git LFS
+
+Large sample thread dumps used for tests are stored with Git LFS.
+Install Git LFS and run `git lfs pull` after cloning to obtain these files.

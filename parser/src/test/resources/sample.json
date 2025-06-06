@@ -1,0 +1,25 @@
+{
+  "timestamp": "2024-01-01T00:00:00Z",
+  "threads": [
+    {
+      "id": 1,
+      "name": "main",
+      "state": "RUNNABLE",
+      "stack": [
+        {"className":"example.Main","methodName":"main","fileName":"Main.java","lineNumber":1}
+      ],
+      "lockedMonitors": [
+        {"className":"java.lang.Object","identity":"0x1"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "worker",
+      "state": "WAITING",
+      "stack": [
+        {"className":"example.Worker","methodName":"run","fileName":"Worker.java","lineNumber":10}
+      ],
+      "waitingOn": {"className":"java.lang.Object","identity":"0x1"}
+    }
+  ]
+}

@@ -17,11 +17,11 @@ import com.example.model.LockInfo;
 
 public class HotSpotParser implements ThreadDumpParser {
     private static final Pattern THREAD_HEADER =
-            Pattern.compile("^\"([^\"]+)\".*(?:nid=0x([0-9a-fA-F]+))?");
+            Pattern.compile("^\"([^\"]+)\".*?nid=0x([0-9a-fA-F]+)");
     private static final Pattern STATE_LINE =
             Pattern.compile("^\\s*java\\.lang\\.Thread.State: (\\S+)");
     private static final Pattern FRAME_LINE =
-            Pattern.compile("^\\s*at ([^.(]+)\\.([^.(]+)\\(([^:]+)(?::(\\d+))?\\)");
+            Pattern.compile("^\\s*at ([\\w.$]+)\\.([\\w$<>]+)\\(([^:]+)(?::(\\d+))?\\)");
     private static final Pattern WAITING_LINE =
             Pattern.compile("-\\s+waiting to lock <([^>]+)> \\(([^)]+)\\)");
     private static final Pattern PARKING_LINE =

@@ -3,6 +3,7 @@
 ## Project Setup
 - [x] Initialize Java project structure with modules for parser, analysis, CLI, and web UI.
 - [x] Configure build to produce a standalone JAR with minimal dependencies.
+- [x] Configure Git LFS for storing sample dumps and other large binary files.
 
 ## Data Model
 - [x] Implement core data model classes: `ThreadDump`, `ThreadInfo`, `StackFrame`, `LockInfo`.
@@ -13,20 +14,27 @@
 - [x] Implement `OpenJ9Parser` for IBM/OpenJ9 `javacore` dumps.
 - [x] Implement parser factory/format detector to choose parser based on file content.
 - [x] Implement `JsonThreadDumpParser` for JSON-based dumps.
+- [x] Support parsing of GZip-compressed thread dump files.
 
 ## Analysis Engine
  - [x] Compute thread state statistics per dump.
  - [x] Detect deadlocks and report involved threads and locks.
-- [ ] Identify lock contention hotspots (many threads waiting on the same lock).
-- [ ] Aggregate stack trace hotspots (common methods/frames).
-- [ ] Group identical stack traces and similar thread names.
-- [ ] Support multi-dump comparison and timeline of thread states.
+ - [x] Identify lock contention hotspots (many threads waiting on the same lock).
+- [x] Aggregate stack trace hotspots (common methods/frames).
+ - [x] Group identical stack traces and similar thread names.
+ - [x] Support multi-dump comparison and timeline of thread states.
+ - [ ] Visualize state timeline in the web UI.
+- [x] Highlight new and disappeared threads across dumps.
+- [x] Show thread diff results in CLI and web UI.
+ - [x] Display thread diff results in the web UI.
 - [x] Create `AnalysisSession` model to manage multiple `ThreadDump` objects.
 - [ ] Provide advisory engine with heuristic checks for common thread anti-patterns.
-- [ ] Flag potential high CPU threads appearing RUNNABLE across dumps.
+ - [x] Flag potential high CPU threads appearing RUNNABLE across dumps.
+ - [x] Expose high CPU thread warnings in CLI and web UI.
+ - [ ] Display high CPU thread warnings in the web UI.
 - [ ] Integrate optional CPU usage data (e.g., from `top -H`) to correlate CPU percentage with thread IDs.
 - [ ] Categorize threads into JVM internal vs application threads for filtering and grouping.
-- [ ] Release old `ThreadDump` objects from memory after analysis to conserve RAM when many dumps are loaded.
+ - [x] Release old `ThreadDump` objects from memory after analysis to conserve RAM when many dumps are loaded.
 
 ## Reporting & Export
 - [ ] Generate HTML report with charts and tables.
@@ -37,12 +45,14 @@
 
 ## CLI Interface
 - [x] Implement command line interface using a parsing library (e.g., Picocli).
-- [ ] Support options for output format and selecting analysis features.
-- [ ] Add CLI option `--show-deadlocks-only` to display only detected deadlocks.
+ - [x] Support options for output format and selecting analysis features.
+ - [x] Add CLI option `--show-deadlocks-only` to display only detected deadlocks.
+- [x] Add CLI option `--filter-state <STATE>` to show only threads in a given state.
+- [x] Add CLI command to display stack trace hotspots.
 
 ## Web Interface
- - [ ] Launch embedded Jetty server with upload form for thread dump files.
- - [ ] Support uploading multiple thread dump files at once in the web UI.
+ - [x] Launch embedded Jetty server with upload form for thread dump files.
+ - [x] Support uploading multiple thread dump files at once in the web UI.
 - [ ] Display results dashboard with charts, thread tables, and analysis highlights.
 - [ ] Integrate Chart.js for rendering charts in the web UI.
 - [ ] Use Datatables or similar for searchable/sortable thread tables.
@@ -51,20 +61,30 @@
 - [ ] Provide glossary page with definitions for thread states and daemon threads.
 - [ ] Provide REST API endpoints for SPA/JSON consumers.
 - [ ] Implement pagination or virtualization for large thread tables.
-- [ ] Allow pasting raw thread dump text in addition to file uploads.
+- [x] Allow pasting raw thread dump text in addition to file uploads.
+ - [x] Show recently analyzed files on the upload page.
 - [ ] Add interactive stack trace viewer with highlighting of blocking lines.
+- [ ] Display grouped identical stack traces in the web UI with counts and expand option.
 - [ ] Parse uploaded files asynchronously to keep the UI responsive.
+ - [x] Cache parsed dumps in memory to avoid reprocessing on each request.
+- [x] Allow configuring the web server port via CLI option or environment variable.
+- [x] Bind web server to localhost by default to avoid remote exposure.
 
 ## Visualization
 - [ ] Provide flame graph visualization for stack trace hotspots.
 - [ ] Add timeline chart showing thread state counts across multiple dumps.
+- [ ] Include legend for chart color codes in the UI.
 
 ## Testing
-- [ ] Unit tests for parsers and analysis engine.
-- [ ] Integration tests for CLI and web workflows.
-- [ ] Unit tests for REST API and Json parser.
-- [ ] Provide sample thread dumps for test fixtures.
+- [x] Unit tests for parsers and analysis engine.
+ - [x] Integration tests for CLI and web workflows.
+- [ ] Unit tests for REST API.
+- [x] Unit tests for Json parser.
+- [x] Provide sample thread dumps for test fixtures.
+- [x] Add CLI integration tests using the sample thread dumps.
+ - [x] Add sample thread dumps for web interface tests and verify upload handling.
 
 ## Documentation
 - [x] Expand README with usage instructions for both CLI and web interfaces.
 
+- [x] Write DOC.md with a user guide for CLI and web interface.

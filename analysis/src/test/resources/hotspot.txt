@@ -1,0 +1,12 @@
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (17.0.1):
+
+"main" #1 prio=5 os_prio=0 tid=0x0000000000010000 nid=0x1 runnable [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+    at example.Main.main(Main.java:1)
+    - locked <0x00000001> (a java.lang.Object)
+
+"worker" #2 prio=5 os_prio=0 tid=0x0000000000020000 nid=0x2 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: WAITING (on object monitor)
+    at java.lang.Object.wait(Native Method)
+    - waiting to lock <0x00000001> (a java.lang.Object)
+    at example.Worker.run(Worker.java:10)
