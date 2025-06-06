@@ -1,0 +1,5 @@
+# Ignore build output
+*/target/
+# Ignore Maven distribution archives
+apache-maven-*.tar.gz
+*.gz

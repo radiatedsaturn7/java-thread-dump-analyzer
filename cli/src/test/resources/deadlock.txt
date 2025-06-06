@@ -1,0 +1,13 @@
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (17.0.1):
+
+"t1" #1 prio=5 os_prio=0 tid=0x0000000000010001 nid=0x1 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+    at example.Class.method(Class.java:1)
+    - waiting to lock <0x00000002> (a java.lang.Object)
+    - locked <0x00000001> (a java.lang.Object)
+
+"t2" #2 prio=5 os_prio=0 tid=0x0000000000020002 nid=0x2 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+    at example.Class.other(Class.java:2)
+    - waiting to lock <0x00000001> (a java.lang.Object)
+    - locked <0x00000002> (a java.lang.Object)

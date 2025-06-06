@@ -9,3 +9,8 @@ This repository uses a TODO-driven workflow.
 5. Commit your changes with a descriptive message.
 
 Repeat for future tasks.
+
+If your change adds or modifies functionality, update `DOC.md` to keep the usage instructions current.
+
+Large sample dumps and binary assets should be tracked using Git LFS. Update the
+documentation when adding new LFS files so users know to run `git lfs pull`.
